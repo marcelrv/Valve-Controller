@@ -1,3 +1,25 @@
+/*
+ Temperature Controlled Valve
+ Copyright (c) 2014 Marcel Verpaalen.  All right reserved.
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+ Get the settings from EEPROM
+ See header.h for more details
+ 
+ */
+ 
 #include <EEPROMex.h>
 
 //read the addresses setup from the eeprom
@@ -116,10 +138,10 @@ void InitializeEEprom() {
   Serial.println(F("Initialize EEPROM Values"));
 
   //MQTT defaults
-  snprintf (serverName, MAX_SERVERNAME_LENGHT, "192.168.3.45");
-  mqttPort = 1883;
-  snprintf (userName, MAX_SERVERNAME_LENGHT, "vc");
-  snprintf (userPass, MAX_SERVERNAME_LENGHT, "vc");
+  snprintf (serverName, MAX_SERVERNAME_LENGHT, "m21.cloudmqtt.com");
+  mqttPort = 16929L;
+  snprintf (userName, MAX_SERVERNAME_LENGHT, "valveUSER");
+  snprintf (userPass, MAX_SERVERNAME_LENGHT, "valvePWD");
 
   //Temperature Sensor defaults
   numSensors = 0;
@@ -154,9 +176,3 @@ void writeValvePosition(int ValveNumber, uint8_t MotorPosition) {
 void ereaseEEPROM() {
   for (int i = 0; i < 511; i++)  EEPROM.updateByte (i, 0);
 }
-
-
-
-
-
-

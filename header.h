@@ -74,7 +74,7 @@ int address_Valve_Drift;
 
 //MQTT
 #define MAX_SERVERNAME_LENGHT 30
-#define MAX_USERNAMEPASS_LENGHT 10
+#define MAX_USERNAMEPASS_LENGHT 15
 char serverName [MAX_SERVERNAME_LENGHT] ;
 char userName [MAX_USERNAMEPASS_LENGHT] ;
 char userPass [MAX_USERNAMEPASS_LENGHT] ;

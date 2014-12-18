@@ -37,24 +37,36 @@ unsigned long lastMQTTReconnect = 0;
 
 // Callback function header
 void callback(char* topic, byte* payload, unsigned int length);
-PubSubClient client(serverName, mqttPort, callback, ethClient);
+PubSubClient client(serverName, (unsigned int) mqttPort, callback, ethClient);
 
 void setupMQTT()
 {
   if (mqttConnect()) {
     Serial.println(F("Setup MQTT Client"));
   } 
-  else    Serial.print(F("ERROR: MQTT not available!"));
+  else    Serial.println(F("ERROR: MQTT not available!"));
 
 }
 
 boolean mqttConnect () {
   boolean mqttConnected = false;
   if (millis() > lastMQTTReconnect){
-    if (strlen (userName) == 0) mqttConnected = client.connect(ClientID); 
+    Serial.println(F("Connect MQTT Client"));
+    Serial.print(F("Port: "));
+    Serial.println((unsigned int) mqttPort);
+
+    if (strlen (userName) == 0) mqttConnected = client.connect(ClientID);
     else mqttConnected = client.connect(ClientID, userName, userPass);
-    client.subscribe(MQTT_commandtopic);
-    lastMQTTReconnect = millis() + intervalReconnect;
+    
+    if (mqttConnected){
+      client.subscribe(MQTT_commandtopic);
+      lastMQTTReconnect = millis();
+    } 
+    else {
+       Serial.println(F("Connection to MQTT  server failed"));
+      lastMQTTReconnect = millis() + intervalReconnect;
+    }
+    
   }
   return mqttConnected;
 }
@@ -131,8 +143,10 @@ void publishMQTT(char* topic, char* msg, boolean print2Serial) {
 
 void MQTTLoopnConnect() {
   if (!client.loop() ) {
-    Serial.print(F("Lost MQTT Connection :"));
-    Serial.println(millis());
+    if (millis() > lastMQTTReconnect){
+      Serial.print(F("Lost MQTT Connection :"));
+      Serial.println(millis());
+    }
     if (mqttConnect()) {
       Serial.println(F("Reconnected"));
       delay(50);
@@ -143,41 +157,41 @@ void MQTTLoopnConnect() {
 
 }
 
-
 void publish_Drift(int valveNum) {
-    snprintf (TopicBuffer, TOPICSIZE, "valves/%1d/drift", valveNum);
-    publishMQTT (TopicBuffer, Valve_Drift[valveNum]);    
+  snprintf (TopicBuffer, TOPICSIZE, "valves/%1d/drift", valveNum);
+  publishMQTT (TopicBuffer, Valve_Drift[valveNum]);    
 }
 
-
 void publish_Switch_Temperature(int valveNum) {
-   snprintf (TopicBuffer, TOPICSIZE, "valves/%1d/temp", valveNum);
-    publishMQTT (TopicBuffer, Valve_Switch_Temperature[valveNum]);  
+  snprintf (TopicBuffer, TOPICSIZE, "valves/%1d/temp", valveNum);
+  publishMQTT (TopicBuffer, Valve_Switch_Temperature[valveNum]);  
 }
 
 void publish_Mode(int valveNum) {
-    snprintf (TopicBuffer, TOPICSIZE, "valves/%1d/mode", valveNum);
-    publishMQTT (TopicBuffer, (long)Valve_Modes[valveNum]);
+  snprintf (TopicBuffer, TOPICSIZE, "valves/%1d/mode", valveNum);
+  publishMQTT (TopicBuffer, (long)Valve_Modes[valveNum]);
 }
 
 void publish_Valve_Name(int valveNum) {
-    snprintf (TopicBuffer, TOPICSIZE, "valves/%1d/name", valveNum);
-    publishMQTT (TopicBuffer, valveDescriptions[valveNum]);
-    }
-    void publish_Linked_Sensor(int valveNum) {
-   snprintf (TopicBuffer, TOPICSIZE, "valves/%1d/sensor", valveNum);
-    publishMQTT (TopicBuffer, (long)Valve_Linked_Sensor[valveNum]);
-    }
-    
-    void publish_Sensor_Name(int valveNum) {
-        snprintf (TopicBuffer, TOPICSIZE, "sensor/%1d/name", valveNum);
-    publishMQTT (TopicBuffer, sensorDescriptions[valveNum]);
-    }
-    
- 
-void publish_Server(){
+  snprintf (TopicBuffer, TOPICSIZE, "valves/%1d/name", valveNum);
+  publishMQTT (TopicBuffer, valveDescriptions[valveNum]);
+}
+void publish_Linked_Sensor(int valveNum) {
+  snprintf (TopicBuffer, TOPICSIZE, "valves/%1d/sensor", valveNum);
+  publishMQTT (TopicBuffer, (long)Valve_Linked_Sensor[valveNum]);
+}
 
- publishMQTT ("setting/server", serverName);
+void publish_Sensor_Name(int valveNum) {
+  snprintf (TopicBuffer, TOPICSIZE, "sensor/%1d/name", valveNum);
+  publishMQTT (TopicBuffer, sensorDescriptions[valveNum]);
+}
+
+void publish_Server(){
+  publishMQTT ("setting/server", serverName);
   publishMQTT ("setting/port",  (long) mqttPort);
   publishMQTT ("setting/username", userName);
-  publishMQTT ("setting/password", userPass);}
+  publishMQTT ("setting/password", userPass);
+}
+
+
+
